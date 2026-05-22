@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(node server.js)",
+      "Bash(Start-Sleep -Seconds 4)",
+      "Bash(Get-Content \"C:\\\\Users\\\\nazar\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-nazar-Downloads-files\\\\62012d06-4bdf-4b7b-8b0a-2ce137bb3716\\\\tasks\\\\bfary8stg.output\" -Raw)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3000/health\")",
+      "PowerShell(Stop-Process -Name \"node\" -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3000/\" -UseBasicParsing)",
+      "Bash(curl -s --max-time 15 \"https://galileo.frcon.utn.edu.ar/index.html\")",
+      "PowerShell(Invoke-RestMethod \"http://localhost:3000/api/alertas\")",
+      "PowerShell(Invoke-RestMethod \"http://localhost:3000/health\")",
+      "PowerShell(New-NetFirewallRule -DisplayName \"Alerta Heladas Puerto 3000\" -Direction Inbound -Protocol TCP -LocalPort 3000 -Action Allow -Profile Private)",
+      "Bash(git --version)",
+      "Bash(railway --version)",
+      "Bash(gh --version)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

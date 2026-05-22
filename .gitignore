@@ -1,0 +1,5 @@
+node_modules/
+historial.json
+alertas_enviadas.json
+destinatarios.json
+.env

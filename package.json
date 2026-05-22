@@ -1,0 +1,13 @@
+{
+  "name": "alerta-heladas-concordia",
+  "version": "1.0.0",
+  "description": "Sistema de alertas meteorológicas — Estación Galileo UTN Concordia",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "INTERVALO_MIN=1 node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
