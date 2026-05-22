@@ -672,10 +672,8 @@ let historial = [];
 let sparkChart = null;
 let currentWxState = null;
 
-// Auto-detect API URL: if accessed from this server (has port in URL), use same origin
-const autoUrl = (window.location.port && window.location.protocol === 'http:')
-  ? window.location.origin : '';
-let API_URL = localStorage.getItem('apiUrl') || autoUrl;
+// Auto-detect: usar siempre el mismo origen (funciona en http y https)
+let API_URL = localStorage.getItem('apiUrl') || window.location.origin;
 document.getElementById('apiUrl').value = API_URL;
 
 function guardarUrl() {
