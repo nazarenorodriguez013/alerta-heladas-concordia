@@ -6,6 +6,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Galileo Meteorología</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -281,6 +283,48 @@ main{flex:1;display:flex;flex-direction:column;padding-bottom:80px}
   background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px;
 }
 
+/* ─── NOTIF BUTTON ─── */
+.notif-card{
+  margin:12px 14px 0;
+  background:var(--glass);border:1px solid var(--border);
+  border-radius:var(--r2);overflow:hidden;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.notif-row{
+  display:flex;align-items:center;gap:14px;
+  padding:16px;
+}
+.notif-icon{font-size:28px;flex-shrink:0}
+.notif-info{flex:1}
+.notif-title{font-size:14px;font-weight:600;margin-bottom:3px}
+.notif-sub{font-size:11px;color:var(--muted);line-height:1.4}
+.btn-notif{
+  padding:9px 16px;border-radius:10px;border:none;
+  font-family:var(--sans);font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
+}
+.btn-notif.off{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.btn-notif.on {background:rgba(39,174,96,.25);color:#2ecc71;border:1px solid rgba(39,174,96,.4)}
+.btn-notif.blocked{background:rgba(231,76,60,.15);color:#e74c3c;border:1px solid rgba(231,76,60,.3);cursor:default}
+
+/* ─── INSTALL BANNER ─── */
+.install-bar{
+  margin:0 14px 4px;
+  background:rgba(41,128,185,.15);
+  border:1px solid rgba(41,128,185,.3);
+  border-radius:var(--r2);
+  padding:12px 16px;
+  display:none;align-items:center;gap:12px;
+}
+.install-bar.visible{display:flex}
+.install-bar span{flex:1;font-size:12px;color:rgba(255,255,255,.8)}
+.btn-install{
+  padding:8px 14px;border-radius:8px;border:none;
+  background:rgba(41,128,185,.5);color:#fff;
+  font-family:var(--sans);font-size:12px;font-weight:600;
+  cursor:pointer;
+}
+
 /* ─── NAV ─── */
 nav{
   position:fixed;bottom:0;left:0;right:0;z-index:20;
@@ -478,6 +522,25 @@ nav{
     <div class="s-row"><span class="s-name">Sensor de rayos</span><span class="badge na">No instalado</span></div>
     <div class="s-row"><span class="s-name">Granizómetro</span><span class="badge na">No instalado</span></div>
   </div>
+  <div class="notif-card">
+    <div class="notif-row">
+      <div class="notif-icon">🔔</div>
+      <div class="notif-info">
+        <div class="notif-title">Notificaciones de alerta</div>
+        <div class="notif-sub" id="notifSub">Recibí alertas de helada y tormenta aunque la app esté cerrada</div>
+      </div>
+      <button class="btn-notif off" id="btnNotif" onclick="toggleNotif()">Activar</button>
+    </div>
+    <div style="padding:0 16px 14px;display:flex;gap:10px">
+      <button class="btn-save" style="margin-top:0;background:rgba(255,255,255,.07)" onclick="testNotif()">Enviar prueba</button>
+    </div>
+  </div>
+
+  <div class="install-bar" id="installBar">
+    <span>📲 Instalá la app en tu teléfono</span>
+    <button class="btn-install" id="btnInstall" onclick="instalarApp()">Instalar</button>
+  </div>
+
   <div class="api-card">
     <label>URL del servidor backend</label>
     <input type="url" id="apiUrl" placeholder="http://192.168.x.x:3000" autocapitalize="none" autocorrect="off"/>
@@ -964,6 +1027,118 @@ function renderSparkline() {
 
 fetchData();
 setInterval(fetchData, 5 * 60 * 1000);
+
+// ─── Service Worker + PWA ─────────────────────────────────────────────────────
+let swReg = null;
+let deferredInstall = null;
+
+async function initSW() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swReg = await navigator.serviceWorker.register('/sw.js');
+    console.log('[SW] Registrado');
+    actualizarEstadoNotif();
+  } catch (e) {
+    console.warn('[SW] Error:', e);
+  }
+}
+
+// Capturar evento de instalación
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('installBar').classList.add('visible');
+});
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBar').classList.remove('visible');
+  deferredInstall = null;
+});
+
+async function instalarApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  const { outcome } = await deferredInstall.userChoice;
+  if (outcome === 'accepted') deferredInstall = null;
+}
+
+// ─── Notificaciones Push ──────────────────────────────────────────────────────
+function actualizarEstadoNotif() {
+  const btn = document.getElementById('btnNotif');
+  const sub = document.getElementById('notifSub');
+  if (!('Notification' in window)) {
+    btn.textContent = 'No disponible';
+    btn.className = 'btn-notif blocked';
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    btn.textContent = 'Bloqueado';
+    btn.className = 'btn-notif blocked';
+    sub.textContent = 'Habilitá las notificaciones en la configuración del navegador';
+    return;
+  }
+  // Verificar si ya hay suscripción activa
+  if (swReg) {
+    swReg.pushManager.getSubscription().then(s => {
+      if (s) {
+        btn.textContent = 'Activadas ✓';
+        btn.className = 'btn-notif on';
+        sub.textContent = 'Vas a recibir alertas de helada y tormenta en este dispositivo';
+      } else {
+        btn.textContent = 'Activar';
+        btn.className = 'btn-notif off';
+        sub.textContent = 'Recibí alertas de helada y tormenta aunque la app esté cerrada';
+      }
+    });
+  }
+}
+
+async function toggleNotif() {
+  if (!swReg) return alert('El service worker no está listo. Recargá la página.');
+  const sub = await swReg.pushManager.getSubscription();
+  if (sub) {
+    // Desactivar
+    await sub.unsubscribe();
+    await fetch(API_URL + '/api/unsubscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ endpoint: sub.endpoint }),
+    }).catch(() => {});
+    actualizarEstadoNotif();
+    return;
+  }
+  // Activar — pedir permiso
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') { actualizarEstadoNotif(); return; }
+
+  // Obtener clave pública VAPID del servidor
+  const { key } = await fetch(API_URL + '/api/vapid-public-key').then(r => r.json());
+  const newSub = await swReg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array(key),
+  });
+  await fetch(API_URL + '/api/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newSub),
+  });
+  actualizarEstadoNotif();
+}
+
+async function testNotif() {
+  if (!API_URL) return alert('Configurá la URL del servidor primero');
+  const r = await fetch(API_URL + '/api/test-notificacion', { method: 'POST' }).then(r => r.json()).catch(() => null);
+  if (!r) return alert('Error al conectar con el servidor');
+  if (r.error) return alert('Primero activá las notificaciones en este dispositivo');
+  alert(`Notificación de prueba enviada a ${r.enviadas} dispositivo(s)`);
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+initSW();
 </script>
 </body>
 </html>

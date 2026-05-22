@@ -17,7 +17,18 @@
       "Bash(gh --version)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git config *)",
+      "Bash(railway whoami *)",
+      "Bash(railway init *)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(curl -s \"https://estacion-meteorologica-concordia.onrender.com/health\")",
+      "Bash(curl -s \"https://estacion-meteorologica-concordia.onrender.com/api/estado\")",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const j=JSON.parse\\(d\\); console.log\\('Temp:',j.datosRaw.temperatura,'Lluvia:',j.datosRaw.promLluvia,'LluviaHoy:',j.datosRaw.lluviaHoy,'Tormenta nivel:',j.alertas.tormenta.nivel,'Helada nivel:',j.alertas.helada.nivel\\)\")",
+      "Bash(git push *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"const wp=require\\('web-push'\\);const k=wp.generateVAPIDKeys\\(\\);console.log\\('PUBLIC='+k.publicKey\\);console.log\\('PRIVATE='+k.privateKey\\)\")"
     ]
   }
 }
