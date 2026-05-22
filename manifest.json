@@ -1,14 +1,14 @@
 {
-  "name": "Galileo Meteorología — Concordia",
-  "short_name": "Galileo",
-  "description": "Alertas de helada y tormenta · Estación UTN Concordia",
+  "name": "SMC — Servicio Meteorológico Concordia",
+  "short_name": "SMC",
+  "description": "Alertas de helada y tormenta · Estación Galileo UTN Concordia",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a1520",
-  "theme_color": "#1a6fc4",
+  "background_color": "#0d1b4a",
+  "theme_color": "#1976d2",
   "orientation": "portrait-primary",
   "icons": [
-    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg",          "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
     { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
   ]
 }

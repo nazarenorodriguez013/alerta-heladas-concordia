@@ -147,19 +147,93 @@ function serveFile(res, filePath, contentType) {
 }
 
 // Íconos SVG inline para PWA
-const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="18" fill="#1a6fc4"/>
-  <text x="50" y="72" font-size="58" text-anchor="middle" font-family="system-ui">🌡</text>
+const ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E88E5"/>
+      <stop offset="60%" stop-color="#1040A0"/>
+      <stop offset="100%" stop-color="#0A1845"/>
+    </linearGradient>
+    <linearGradient id="cg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#ddeeff"/>
+    </linearGradient>
+    <filter id="cs"><feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#00000044"/></filter>
+    <filter id="gs"><feDropShadow dx="0" dy="2" stdDeviation="4"  flood-color="#00000033"/></filter>
+  </defs>
+
+  <!-- Fondo redondeado -->
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <!-- Anillos radar sutiles -->
+  <circle cx="256" cy="188" r="195" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="2"/>
+  <circle cx="256" cy="188" r="145" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="2"/>
+  <circle cx="256" cy="188" r="95"  fill="none" stroke="rgba(255,255,255,.09)" stroke-width="2"/>
+
+  <!-- Nube principal -->
+  <g filter="url(#cs)">
+    <circle cx="204" cy="202" r="62"  fill="url(#cg)"/>
+    <circle cx="268" cy="175" r="78"  fill="url(#cg)"/>
+    <circle cx="338" cy="200" r="54"  fill="url(#cg)"/>
+    <rect   x="144" y="200" width="248" height="72" rx="4" fill="url(#cg)"/>
+  </g>
+
+  <!-- Líneas de lluvia bajo la nube -->
+  <g stroke="rgba(255,255,255,.45)" stroke-width="7" stroke-linecap="round">
+    <line x1="190" y1="302" x2="172" y2="345"/>
+    <line x1="240" y1="302" x2="222" y2="345"/>
+    <line x1="290" y1="302" x2="272" y2="345"/>
+    <line x1="340" y1="302" x2="322" y2="345"/>
+  </g>
+
+  <!-- Termómetro pequeño a la derecha -->
+  <g fill="rgba(255,255,255,.75)" filter="url(#gs)">
+    <rect x="368" y="130" width="18" height="80" rx="9"/>
+    <circle cx="377" cy="220" r="15"/>
+    <rect x="371" y="170" width="12" height="44" rx="0" fill="rgba(100,180,255,.9)"/>
+    <circle cx="377" cy="220" r="10" fill="rgba(100,200,255,.9)"/>
+  </g>
+
+  <!-- Texto SMC -->
+  <text x="256" y="430" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+        font-size="112" fill="white" text-anchor="middle" letter-spacing="-4"
+        filter="url(#gs)">SMC</text>
 </svg>`;
 
 const BADGE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
-  <rect width="96" height="96" rx="14" fill="#1a6fc4"/>
-  <text x="48" y="68" font-size="52" text-anchor="middle" font-family="system-ui">🌡</text>
+  <defs>
+    <linearGradient id="bb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E88E5"/><stop offset="100%" stop-color="#0A1845"/>
+    </linearGradient>
+  </defs>
+  <rect width="96" height="96" rx="18" fill="url(#bb)"/>
+  <text x="48" y="62" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+        font-size="36" fill="white" text-anchor="middle">SMC</text>
 </svg>`;
 
-const ICON_MASKABLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" fill="#1a6fc4"/>
-  <text x="50" y="72" font-size="52" text-anchor="middle" font-family="system-ui">🌡</text>
+const ICON_MASKABLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="mbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E88E5"/>
+      <stop offset="100%" stop-color="#0A1845"/>
+    </linearGradient>
+    <linearGradient id="mcg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ddeeff"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#mbg)"/>
+  <circle cx="204" cy="202" r="62" fill="url(#mcg)"/>
+  <circle cx="268" cy="175" r="78" fill="url(#mcg)"/>
+  <circle cx="338" cy="200" r="54" fill="url(#mcg)"/>
+  <rect   x="144" y="200" width="248" height="72" rx="4" fill="url(#mcg)"/>
+  <g stroke="rgba(255,255,255,.45)" stroke-width="7" stroke-linecap="round">
+    <line x1="190" y1="302" x2="172" y2="345"/>
+    <line x1="240" y1="302" x2="222" y2="345"/>
+    <line x1="290" y1="302" x2="272" y2="345"/>
+    <line x1="340" y1="302" x2="322" y2="345"/>
+  </g>
+  <text x="256" y="430" font-family="Arial Black, Arial, sans-serif" font-weight="900"
+        font-size="112" fill="white" text-anchor="middle" letter-spacing="-4">SMC</text>
 </svg>`;
 
 const servidor = http.createServer(async (req, res) => {
