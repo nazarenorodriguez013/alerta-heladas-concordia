@@ -4,3 +4,4 @@ alertas_enviadas.json
 destinatarios.json
 suscripciones.json
 .env
+.claude/
