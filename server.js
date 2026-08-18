@@ -62,23 +62,27 @@ async function enviarPushAlertas(evaluacion) {
 
   const activas = [];
   for (const sub of suscripciones) {
+    let expirada = false;
     for (const payload of payloads) {
       try {
         await webpush.sendNotification(sub, JSON.stringify(payload));
       } catch (err) {
         if (err.statusCode === 410 || err.statusCode === 404) {
-          console.log("[push] Suscripción expirada, eliminando");
-          continue; // no agregar a activas
+          expirada = true;
+        } else {
+          console.error("[push] Error:", err.message);
         }
-        console.error("[push] Error:", err.message);
       }
     }
-    // Mantener suscripción si no expiró
-    if (!payloads.every(() => false)) activas.push(sub);
+    if (!expirada) activas.push(sub);
   }
 
-  // Limpiar suscripciones expiradas (simplificado: conservamos todas por ahora)
-  console.log(`[push] ${payloads.length} alerta(s) enviadas a ${suscripciones.length} dispositivo(s)`);
+  if (activas.length !== suscripciones.length) {
+    guardarSuscripciones(activas);
+    console.log(`[push] ${suscripciones.length - activas.length} suscripción(es) expirada(s) eliminadas`);
+  }
+
+  console.log(`[push] ${payloads.length} alerta(s) enviadas a ${activas.length} dispositivo(s)`);
 }
 
 // ─── Historial ────────────────────────────────────────────────────────────────

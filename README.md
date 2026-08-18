@@ -22,15 +22,13 @@ Estación Galileo ──scraper──► alertEngine ──► notificaciones
 ## Archivos
 
 ```
-alerta-heladas/
-├── backend/
-│   ├── server.js          ← Servidor HTTP + daemon de monitoreo
-│   ├── scraper.js         ← Lee galileo.frcon.utn.edu.ar
-│   ├── alertEngine.js     ← Calcula riesgo de helada y tormenta
-│   └── notificaciones.js  ← SMS (Twilio) + Push (Firebase FCM)
-├── frontend/
-│   └── index.html         ← Web app completa (móvil, sin instalar nada)
-└── package.json
+server.js          ← Servidor HTTP + daemon de monitoreo + Web Push (VAPID)
+scraper.js         ← Lee galileo.frcon.utn.edu.ar
+alertEngine.js      ← Calcula riesgo de helada y tormenta
+notificaciones.js   ← SMS (Twilio) + Push (Firebase FCM)
+index.html         ← Web app / PWA completa (móvil, instalable, sin backend propio)
+sw.js              ← Service worker (cache + notificaciones push)
+manifest.json      ← Manifest de la PWA
 ```
 
 ---
@@ -74,7 +72,7 @@ imprime las notificaciones en consola en lugar de enviarlas (modo simulado).
 
 ### 4. Configurar destinatarios
 
-Editar `backend/destinatarios.json` (se crea automáticamente en el primer arranque):
+Editar `destinatarios.json` (se crea automáticamente en el primer arranque):
 
 ```json
 [
@@ -105,7 +103,7 @@ npm run dev
 npm start
 
 # Con PM2 (reinicio automático ante caídas)
-pm2 start backend/server.js --name alerta-heladas
+pm2 start server.js --name alerta-heladas
 pm2 save
 pm2 startup
 ```
@@ -120,7 +118,11 @@ pm2 startup
 | `/api/alertas` | GET | Solo alertas activas (respuesta liviana) |
 | `/api/historial?n=48` | GET | Últimas N lecturas |
 | `/health` | GET | Healthcheck |
-| `/api/test-alerta` | POST | Dispara notificación de prueba |
+| `/api/vapid-public-key` | GET | Clave pública VAPID para suscripción push del navegador |
+| `/api/subscribe` | POST | Registra una suscripción push (PWA) |
+| `/api/unsubscribe` | POST | Elimina una suscripción push |
+| `/api/test-notificacion` | POST | Envía una notificación push de prueba a todos los suscriptos |
+| `/api/test-alerta` | POST | Dispara notificación de prueba (legacy) |
 
 ### Ejemplo de respuesta `/api/alertas`
 
@@ -150,14 +152,18 @@ pm2 startup
 
 ## Web App (Frontend)
 
-Abrir `frontend/index.html` en cualquier celular.
-En la pantalla **Sensores → URL del backend** ingresar `http://IP-DEL-SERVIDOR:3000`.
+Es una PWA instalable (manifest + service worker): el servidor la sirve directamente en `/`,
+así que abriendo la IP del servidor desde el celular ya se puede "Agregar a pantalla de inicio".
+En la pantalla **Config → URL del servidor backend** se puede apuntar a otra instancia si hace falta.
 
 La app funciona sin backend en modo demo con los últimos datos hardcodeados.
 
-Para que los productores la usen sin configuración:
-1. Subir `index.html` a cualquier hosting estático (GitHub Pages, Netlify, etc.)
-2. Cambiar la URL del API en el `localStorage` o hardcodearla en el código
+Desde **Config** también se pueden activar notificaciones push (helada/tormenta) para este
+dispositivo, usando Web Push (VAPID) — no requiere Firebase ni instalar nada aparte del navegador.
+
+Para que los productores la usen sin correr su propio servidor:
+1. Desplegar `server.js` en un hosting (Railway, Render, VPS, etc.) — sirve el frontend y la API juntos
+2. Compartir la URL pública; desde ahí cada uno puede instalar la app y activar notificaciones
 
 ---
 

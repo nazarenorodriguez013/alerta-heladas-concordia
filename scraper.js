@@ -96,9 +96,6 @@ async function fetchStationData() {
   const html = await fetchUrl(url);
   const p    = parseCurrentWidget(html);
 
-  // Log para debug
-  console.log("[scraper] Pares encontrados:", Object.keys(p).length, JSON.stringify(p));
-
   const data = {
     timestamp:        new Date().toISOString(),
     fuente:           url,
